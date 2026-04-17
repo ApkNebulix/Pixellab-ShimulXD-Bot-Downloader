@@ -1,10 +1,11 @@
-name: Pixellab Bot Auto Run
+name: Pixellab ShimulXD Bot
 
 on:
   push:
     branches: [ main ]
   schedule:
-    - cron: '0 */4 * * *' # প্রতি ৪ ঘণ্টা পর পর রান হবে
+    - cron: '0 */4 * * *' # প্রতি ৪ ঘণ্টা পর পর অটো রিস্টার্ট
+  workflow_dispatch: # এটি ম্যানুয়ালি রান করার অপশন যোগ করে
 
 jobs:
   build:
@@ -24,5 +25,5 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Bot
-        timeout-minutes: 235 # প্রায় ৪ ঘণ্টা (২৪০ মি.) রান হবে, তারপর অটো বন্ধ হয়ে নতুন করে শুরু হবে
+        timeout-minutes: 235 # প্রায় ৪ ঘণ্টা রান হবে
         run: python bot.py
