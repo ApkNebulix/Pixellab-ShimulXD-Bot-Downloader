@@ -5,10 +5,10 @@ on:
     branches: [ main ]
   schedule:
     - cron: '0 */4 * * *' # প্রতি ৪ ঘণ্টা পর পর অটো রিস্টার্ট
-  workflow_dispatch: # এটি ম্যানুয়ালি রান করার অপশন যোগ করে
+  workflow_dispatch: # এটি ম্যানুয়ালি রান করার অপশন (Manual Run)
 
 jobs:
-  build:
+  run-bot:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -25,5 +25,5 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Bot
-        timeout-minutes: 235 # প্রায় ৪ ঘণ্টা রান হবে
+        timeout-minutes: 235
         run: python bot.py
