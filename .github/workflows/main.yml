@@ -1,0 +1,30 @@
+name: Pixellab ShimulXD Bot
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 */4 * * *' # প্রতি ৪ ঘণ্টা পর পর অটো রিস্টার্ট
+  workflow_dispatch: # এটি ম্যানুয়ালি রান করার অপশন
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Bot (Auto Restart Every 4H)
+        timeout-minutes: 235
+        continue-on-error: true # টাইমআউট হলেও যেন ফেইল না দেখায়, চুপচাপ রিস্টার্ট নিবে
+        run: python bot.py
