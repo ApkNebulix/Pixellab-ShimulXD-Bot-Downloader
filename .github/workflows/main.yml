@@ -1,11 +1,16 @@
-name: Pixellab ShimulXD Bot
+name: Pixellab ShimulXD Bot Runner
 
 on:
   push:
     branches: [ main ]
   schedule:
-    - cron: '0 */4 * * *' # প্রতি ৪ ঘণ্টা পর পর অটো রিস্টার্ট
-  workflow_dispatch: # এটি ম্যানুয়ালি রান করার অপশন
+    - cron: '0 */4 * * *' # প্রতি ৪ ঘণ্টা পর পর নতুন করে রান হবে
+  workflow_dispatch: # ম্যানুয়ালি স্টার্ট করার অপশন
+
+# এটি নিশ্চিত করবে যে নতুন রান শুরু হলে আগের পুরনো রানটি অটোমেটিক বন্ধ হয়ে যাবে
+concurrency:
+  group: bot-running
+  cancel-in-progress: true
 
 jobs:
   run-bot:
@@ -15,7 +20,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: accessories/setup-python@v4
         with:
           python-version: '3.10'
 
@@ -24,7 +29,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Bot (Auto Restart Every 4H)
-        timeout-minutes: 235
-        continue-on-error: true # টাইমআউট হলেও যেন ফেইল না দেখায়, চুপচাপ রিস্টার্ট নিবে
-        run: python bot.py
+      - name: Run Bot and Generate Log
+        id: bot_run
+        timeout-minutes: 235 # প্রায় ৩ ঘণ্টা ৫৫ মিনিট পর এটি নিজে থেকে থামবে যাতে শিডিউল রান শুরু হতে পারে
+        continue-on-error: true
+        run: |
+          # বটের আউটপুট ফাইলে সেভ হবে
+          python bot.py > bot.log 2>&1
+
+      - name: Send Log to Admin on Failure/Timeout
+        if: always() # বট বন্ধ হোক বা ক্রাশ করুক, লগ সব সময় পাঠাবে
+        run: |
+          CAPTION="🚀 **Bot Restart Notification**%0A%0AStatus: Bot session finished or restarted.%0AAdmin ID: 8381570120"
+          # টেলিক্রাম এপিআই দিয়ে ফাইল পাঠানো
+          curl -F document=@"bot.log" "https://api.telegram.org/bot8354048442:AAGwTXhT9O3fA4m30ulMkCtEkLmn0_Umil4/sendDocument?chat_id=8381570120&caption=$CAPTION&parse_mode=Markdown"
